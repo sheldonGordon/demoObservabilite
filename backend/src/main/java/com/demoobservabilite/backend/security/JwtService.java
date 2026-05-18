@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

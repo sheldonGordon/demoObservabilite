@@ -1,4 +1,4 @@
-FROM maven:3.9.8-eclipse-temurin-11 AS build
+FROM maven:3.9.8-eclipse-temurin-21 AS build
 WORKDIR /workspace
 
 COPY pom.xml /workspace/pom.xml
@@ -8,7 +8,7 @@ RUN mvn -pl batch -am -DskipTests dependency:go-offline
 COPY batch/src /workspace/batch/src
 RUN mvn -pl batch -am -DskipTests package
 
-FROM eclipse-temurin:11-jre
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 RUN mkdir -p /otel

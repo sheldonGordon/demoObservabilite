@@ -2,9 +2,9 @@
 
 Monorepo avec 3 modules :
 
-- `frontend` : Angular 17
-- `backend` : API Spring Boot
-- `batch` : Spring Batch
+- `frontend` : Angular 20
+- `backend` : API Spring Boot 3
+- `batch` : Spring Batch 5
 
 ## Architecture
 
@@ -15,10 +15,10 @@ Monorepo avec 3 modules :
 
 ## Prerequis
 
-- Java 11+
+- Java 21+
 - Maven 3.8+
-- Node.js 18+
-- npm 9+
+- Node.js 24.15.0
+- npm 11.12.1
 - Docker + Docker Compose (optionnel, recommande)
 
 ## Lancement local (sans Docker)
@@ -45,6 +45,11 @@ mvn spring-boot:run
 ```
 
 ### 4) Demarrer le frontend
+
+Version recommandee front:
+
+- `node -v` -> `v24.15.0`
+- `npm -v` -> `11.12.1`
 
 ```powershell
 cd frontend

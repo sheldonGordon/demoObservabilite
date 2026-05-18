@@ -15,6 +15,10 @@
     <name>batch</name>
     <description>Application Spring Batch du projet demoObservabilite</description>
 
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
