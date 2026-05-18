@@ -1,14 +1,14 @@
 package com.demoobservabilite.backend.security;
 
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.Date;
+
+import javax.crypto.SecretKey;
 
 import jakarta.annotation.PostConstruct;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +23,7 @@ public class JwtService {
     @Value("${security.jwt.expiration-ms:3600000}")
     private long expirationInMs;
 
-    private Key signingKey;
+    private SecretKey signingKey;
 
     @PostConstruct
     void init() {
@@ -44,26 +44,26 @@ public class JwtService {
                 .setSubject(subject)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(signingKey, SignatureAlgorithm.HS256)
+                .signWith(signingKey)
                 .compact();
     }
 
     public String extractUsername(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(signingKey)
+        Claims claims = Jwts.parser()
+                .verifyWith(signingKey)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
         return claims.getSubject();
     }
 
     public boolean isTokenValid(String token) {
         try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(signingKey)
+            Claims claims = Jwts.parser()
+                    .verifyWith(signingKey)
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseSignedClaims(token)
+                    .getPayload();
             return claims.getExpiration().after(new Date());
         } catch (Exception ex) {
             return false;
