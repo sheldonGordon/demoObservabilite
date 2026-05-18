@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: demo-observabilite-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/demo_observabilite}
+    username: ${SPRING_DATASOURCE_USERNAME:demo}
+    password: ${SPRING_DATASOURCE_PASSWORD:demo}
+    driver-class-name: org.postgresql.Driver
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,loggers
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%X{trace_id:-},%X{span_id:-}] %logger{36} - %msg%n"
+
+security:
+  jwt:
+    # Cle de demo uniquement, a remplacer en production.
+    secret: ${SECURITY_JWT_SECRET:0123456789012345678901234567890123456789012345678901234567890123}
+    expiration-ms: ${SECURITY_JWT_EXPIRATION_MS:3600000}
+  demo-user:
+    username: ${SECURITY_DEMO_USERNAME:demo}
+    password: ${SECURITY_DEMO_PASSWORD:demo}
+

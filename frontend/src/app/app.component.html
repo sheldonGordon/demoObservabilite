@@ -1,0 +1,35 @@
+<main class="page">
+  <section class="hero">
+    <p class="eyebrow">Structure initiale</p>
+    <h1>{{ title }}</h1>
+    <p>
+      Monorepo prêt avec un front Angular, un back Spring Boot et un batch Spring Batch.
+    </p>
+  </section>
+
+  <section class="cards">
+    <article class="card">
+      <h2>Frontend Angular</h2>
+      <p>Application SPA sur le port 4200.</p>
+    </article>
+
+    <article class="card">
+      <h2>Backend Spring Boot</h2>
+      <p>API REST avec endpoint <code>/api/hello</code> et actuator.</p>
+    </article>
+
+    <article class="card">
+      <h2>Batch Spring Batch</h2>
+      <p>Job de démonstration exécuté au démarrage.</p>
+    </article>
+  </section>
+
+  <section class="backend-check">
+    <button type="button" (click)="chargerBackend()">Tester le backend</button>
+    <p>{{ apiMessage }}</p>
+
+    <button type="button" (click)="chargerBackendSecurise()">Tester endpoint securise (JWT)</button>
+    <p>{{ secureApiMessage }}</p>
+  </section>
+</main>
+

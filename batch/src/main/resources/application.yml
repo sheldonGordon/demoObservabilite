@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: demo-observabilite-batch
+  main:
+    web-application-type: none
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: true
+      name: demoJob
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/demo_observabilite}
+    driver-class-name: org.postgresql.Driver
+    username: ${SPRING_DATASOURCE_USERNAME:demo}
+    password: ${SPRING_DATASOURCE_PASSWORD:demo}
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%X{trace_id:-},%X{span_id:-}] %logger{36} - %msg%n"
+

@@ -1,0 +1,19 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Java / Maven
+**/target/
+
+# Node / Angular
+**/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Logs
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
