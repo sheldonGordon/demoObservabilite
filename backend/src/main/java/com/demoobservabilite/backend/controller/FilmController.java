@@ -4,12 +4,15 @@ import java.util.List;
 
 import com.demoobservabilite.backend.film.dto.FilmDetailsResponse;
 import com.demoobservabilite.backend.film.dto.FilmSummaryResponse;
+import com.demoobservabilite.backend.film.dto.FilmUpdateRequest;
 import com.demoobservabilite.backend.film.service.FilmService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,6 +39,12 @@ public class FilmController {
     public FilmDetailsResponse findFilmDetailsById(@PathVariable Long id) {
         LOGGER.info("Requete recue sur /api/films/{}", id);
         return filmService.findFilmDetailsById(id);
+    }
+
+    @PutMapping("/{id}")
+    public FilmDetailsResponse updateFilm(@PathVariable Long id, @RequestBody FilmUpdateRequest request) {
+        LOGGER.info("Requete recue sur PUT /api/films/{}", id);
+        return filmService.updateFilm(id, request);
     }
 }
 

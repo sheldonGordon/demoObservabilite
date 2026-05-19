@@ -61,48 +61,96 @@ public class Film {
         return id;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public String getTitle() {
         return title;
+    }
+
+    public void setOriginalTitle(String originalTitle) {
+        this.originalTitle = originalTitle;
     }
 
     public String getOriginalTitle() {
         return originalTitle;
     }
 
+    public void setReleaseYear(Integer releaseYear) {
+        this.releaseYear = releaseYear;
+    }
+
     public Integer getReleaseYear() {
         return releaseYear;
+    }
+
+    public void setGenre(String genre) {
+        this.genre = genre;
     }
 
     public String getGenre() {
         return genre;
     }
 
+    public void setDirector(String director) {
+        this.director = director;
+    }
+
     public String getDirector() {
         return director;
+    }
+
+    public void setDurationMinutes(Integer durationMinutes) {
+        this.durationMinutes = durationMinutes;
     }
 
     public Integer getDurationMinutes() {
         return durationMinutes;
     }
 
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
     public String getLanguage() {
         return language;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public String getCountry() {
         return country;
     }
 
+    public void setAgeRating(String ageRating) {
+        this.ageRating = ageRating;
+    }
+
     public String getAgeRating() {
         return ageRating;
+    }
+
+    public void setImdbScore(BigDecimal imdbScore) {
+        this.imdbScore = imdbScore;
     }
 
     public BigDecimal getImdbScore() {
         return imdbScore;
     }
 
+    public void setSynopsis(String synopsis) {
+        this.synopsis = synopsis;
+    }
+
     public String getSynopsis() {
         return synopsis;
+    }
+
+    public void setUpdatedAt(OffsetDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public OffsetDateTime getCreatedAt() {

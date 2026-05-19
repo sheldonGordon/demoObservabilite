@@ -71,6 +71,7 @@ Endpoints films:
 
 - `GET /api/films` -> liste de tous les films (id, title, releaseYear, genre) (JWT requis)
 - `GET /api/films/{id}` -> detail complet d'un film (JWT requis)
+- `PUT /api/films/{id}` -> modification d'un film (JWT requis, payload partiel possible)
 
 Credentials de demo JWT:
 
@@ -88,6 +89,7 @@ Endpoint securise:
 - `GET /api/secure/hello` avec header `Authorization: Bearer <token>`
 - `GET /api/films` avec header `Authorization: Bearer <token>`
 - `GET /api/films/{id}` avec header `Authorization: Bearer <token>`
+- `PUT /api/films/{id}` avec header `Authorization: Bearer <token>`
 
 ## Lancement complet avec Docker Compose
 
@@ -102,6 +104,12 @@ Services exposes:
 - postgres: `localhost:5432`
 
 Le module `batch` execute son job puis termine.
+
+Traitement batch actuel:
+
+- authentification sur l'API backend via JWT
+- recuperation de tous les films via `GET /api/films`
+- mise a jour aleatoire de `imdb_score` film par film via `PUT /api/films/{id}`
 
 ## OpenTelemetry (logs uniquement)
 
