@@ -1,62 +1,156 @@
-import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
+
+interface FilmSummary {
+  id: number;
+  title: string;
+  release_year: number;
+  genre: string;
+}
+
+interface FilmDetails {
+  id: number;
+  title: string;
+  originalTitle?: string;
+  release_year: number;
+  genre: string;
+  director: string;
+  durationMinutes: number;
+  language: string;
+  country?: string;
+  ageRating?: string;
+  imdbScore?: number;
+  synopsis?: string;
+}
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
-  title = 'demoObservabilite';
-  apiMessage = 'Aucune réponse du backend pour le moment.';
-  secureApiMessage = 'Aucune reponse de l\'endpoint securise pour le moment.';
-  token = '';
-  readonly username = 'demo';
-  readonly password = 'demo';
+export class AppComponent implements OnInit {
+  username = 'demo';
+  password = 'demo';
+  loginError = '';
+  loadingLogin = false;
+  authToken = '';
+
+  films: FilmSummary[] = [];
+  selectedFilm?: FilmDetails;
+  loadingFilms = false;
+  loadingDetails = false;
+  filmsError = '';
+  detailsError = '';
 
   constructor(private readonly http: HttpClient) {}
 
-  chargerBackend(): void {
-    this.http
-      .get<{ message?: string }>('/api/hello')
-      .subscribe({
-        next: (response) => {
-          this.apiMessage = response.message ?? 'Réponse reçue sans message.';
-        },
-        error: () => {
-          this.apiMessage = 'Impossible de joindre le backend. Verifie que le backend est demarre.';
-        }
-      });
+  ngOnInit(): void {
+    const storedToken = localStorage.getItem('demo.jwt.token');
+    if (storedToken) {
+      this.authToken = storedToken;
+      this.loadFilms();
+    }
   }
 
-  chargerBackendSecurise(): void {
+  get isAuthenticated(): boolean {
+    return this.authToken.length > 0;
+  }
+
+  login(): void {
+    this.loadingLogin = true;
+    this.loginError = '';
+
     this.http
       .post<{ token: string }>('/api/auth/token', {
         username: this.username,
         password: this.password
       })
       .subscribe({
-        next: (authResponse) => {
-          this.token = authResponse.token;
-          this.http
-            .get<{ message?: string; user?: string }>('/api/secure/hello', {
-              headers: { Authorization: `Bearer ${this.token}` }
-            })
-            .subscribe({
-              next: (secureResponse) => {
-                const message = secureResponse.message ?? 'Reponse securisee recue.';
-                const user = secureResponse.user ?? 'unknown';
-                this.secureApiMessage = `${message} (user=${user})`;
-              },
-              error: () => {
-                this.secureApiMessage = 'Echec appel endpoint securise.';
-              }
-            });
+        next: (response) => {
+          this.authToken = response.token;
+          localStorage.setItem('demo.jwt.token', this.authToken);
+          this.loadingLogin = false;
+          this.loadFilms();
         },
         error: () => {
-          this.secureApiMessage = 'Impossible d\'obtenir un token JWT.';
+          this.loginError = 'Connexion impossible. Verifie username/password.';
+          this.loadingLogin = false;
         }
       });
+  }
+
+  logout(): void {
+    this.authToken = '';
+    localStorage.removeItem('demo.jwt.token');
+    this.films = [];
+    this.selectedFilm = undefined;
+    this.filmsError = '';
+    this.detailsError = '';
+  }
+
+  loadFilms(): void {
+    if (!this.isAuthenticated) {
+      return;
+    }
+
+    this.loadingFilms = true;
+    this.filmsError = '';
+
+    this.http
+      .get<FilmSummary[]>('/api/films', { headers: this.authHeaders() })
+      .subscribe({
+        next: (response) => {
+          this.films = response;
+          if (this.films.length > 0) {
+            this.selectFilm(this.films[0]);
+          } else {
+            this.selectedFilm = undefined;
+          }
+          this.loadingFilms = false;
+        },
+        error: (error) => {
+          if (error?.status === 401 || error?.status === 403) {
+            this.logout();
+            this.loginError = 'Session expiree. Reconnecte-toi.';
+          } else {
+            this.filmsError = 'Impossible de charger les films.';
+          }
+          this.loadingFilms = false;
+        }
+      });
+  }
+
+  selectFilm(film: FilmSummary): void {
+    if (!this.isAuthenticated) {
+      return;
+    }
+
+    this.loadingDetails = true;
+    this.detailsError = '';
+
+    this.http
+      .get<FilmDetails>(`/api/films/${film.id}`, { headers: this.authHeaders() })
+      .subscribe({
+        next: (response) => {
+          this.selectedFilm = response;
+          this.loadingDetails = false;
+        },
+        error: (error) => {
+          if (error?.status === 401 || error?.status === 403) {
+            this.logout();
+            this.loginError = 'Session expiree. Reconnecte-toi.';
+          } else {
+            this.detailsError = 'Impossible de charger le detail du film.';
+          }
+          this.loadingDetails = false;
+        }
+      });
+  }
+
+  private authHeaders(): HttpHeaders {
+    return new HttpHeaders({
+      Authorization: `Bearer ${this.authToken}`
+    });
   }
 }
 

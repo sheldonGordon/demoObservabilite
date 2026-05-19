@@ -6,6 +6,8 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME:demo}
     password: ${SPRING_DATASOURCE_PASSWORD:demo}
     driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
 
 server:
   port: 8080

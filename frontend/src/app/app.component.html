@@ -1,35 +1,72 @@
 <main class="page">
-  <section class="hero">
-    <p class="eyebrow">Structure initiale</p>
-    <h1>{{ title }}</h1>
-    <p>
-      Monorepo prêt avec un front Angular, un back Spring Boot et un batch Spring Batch.
-    </p>
+  <section class="hero" *ngIf="!isAuthenticated">
+    <p class="eyebrow">Connexion</p>
+    <h1>Acces securise</h1>
+    <p>Connecte-toi pour acceder aux endpoints <code>/api/films</code>.</p>
   </section>
 
-  <section class="cards">
-    <article class="card">
-      <h2>Frontend Angular</h2>
-      <p>Application SPA sur le port 4200.</p>
-    </article>
+  <section class="panel auth-panel" *ngIf="!isAuthenticated">
+    <h2>Login Spring Security (JWT)</h2>
 
-    <article class="card">
-      <h2>Backend Spring Boot</h2>
-      <p>API REST avec endpoint <code>/api/hello</code> et actuator.</p>
-    </article>
+    <label for="username">Username</label>
+    <input id="username" type="text" [(ngModel)]="username" />
 
-    <article class="card">
-      <h2>Batch Spring Batch</h2>
-      <p>Job de démonstration exécuté au démarrage.</p>
-    </article>
+    <label for="password">Password</label>
+    <input id="password" type="password" [(ngModel)]="password" />
+
+    <button type="button" (click)="login()" [disabled]="loadingLogin">Se connecter</button>
+    <p *ngIf="loginError" class="state error">{{ loginError }}</p>
   </section>
 
-  <section class="backend-check">
-    <button type="button" (click)="chargerBackend()">Tester le backend</button>
-    <p>{{ apiMessage }}</p>
+  <section class="hero" *ngIf="isAuthenticated">
+    <p class="eyebrow">Catalogue films</p>
+    <h1>Demo Films</h1>
+    <p>Liste des films depuis <code>/api/films</code> et detail via <code>/api/films/:id</code>.</p>
+    <button type="button" (click)="logout()">Se deconnecter</button>
+  </section>
 
-    <button type="button" (click)="chargerBackendSecurise()">Tester endpoint securise (JWT)</button>
-    <p>{{ secureApiMessage }}</p>
+  <section class="layout" *ngIf="isAuthenticated">
+    <article class="panel list-panel">
+      <div class="panel-header">
+        <h2>Films</h2>
+        <button type="button" (click)="loadFilms()" [disabled]="loadingFilms">Rafraichir</button>
+      </div>
+
+      <p *ngIf="loadingFilms" class="state">Chargement des films...</p>
+      <p *ngIf="filmsError" class="state error">{{ filmsError }}</p>
+
+      <ul *ngIf="!loadingFilms && !filmsError" class="film-list">
+        <li *ngFor="let film of films" [class.active]="selectedFilm?.id === film.id">
+          <button type="button" class="film-item" (click)="selectFilm(film)">
+            <h3>{{ film.title }}</h3>
+            <p>{{ film.release_year }} - {{ film.genre }}</p>
+          </button>
+        </li>
+      </ul>
+    </article>
+
+    <article class="panel detail-panel">
+      <h2>Detail du film</h2>
+
+      <p *ngIf="loadingDetails" class="state">Chargement du detail...</p>
+      <p *ngIf="detailsError" class="state error">{{ detailsError }}</p>
+      <p *ngIf="!selectedFilm && !loadingDetails && !detailsError" class="state">Selectionne un film.</p>
+
+      <div *ngIf="selectedFilm && !loadingDetails" class="detail-grid">
+        <p><strong>ID :</strong> {{ selectedFilm.id }}</p>
+        <p><strong>Titre :</strong> {{ selectedFilm.title }}</p>
+        <p><strong>Titre original :</strong> {{ selectedFilm.originalTitle || '-' }}</p>
+        <p><strong>Annee :</strong> {{ selectedFilm.release_year }}</p>
+        <p><strong>Genre :</strong> {{ selectedFilm.genre }}</p>
+        <p><strong>Realisateur :</strong> {{ selectedFilm.director }}</p>
+        <p><strong>Duree :</strong> {{ selectedFilm.durationMinutes }} min</p>
+        <p><strong>Langue :</strong> {{ selectedFilm.language }}</p>
+        <p><strong>Pays :</strong> {{ selectedFilm.country || '-' }}</p>
+        <p><strong>Classification :</strong> {{ selectedFilm.ageRating || '-' }}</p>
+        <p><strong>IMDB :</strong> {{ selectedFilm.imdbScore ?? '-' }}</p>
+        <p class="synopsis"><strong>Synopsis :</strong> {{ selectedFilm.synopsis || '-' }}</p>
+      </div>
+    </article>
   </section>
 </main>
 

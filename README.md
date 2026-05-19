@@ -30,6 +30,11 @@ Utilise une base nommee `demo_observabilite` avec:
 - user: `demo`
 - password: `demo`
 
+Au premier demarrage de PostgreSQL (base vide), les scripts d'init font les actions suivantes:
+
+- creation de la table `film` via `postgres/init/01-create-film-table.sql`
+- insertion automatique de 100 films de demo via `postgres/init/02-seed-film.sql`
+
 ### 2) Demarrer le backend
 
 ```powershell
@@ -57,8 +62,15 @@ npm install
 npm start
 ```
 
+Le frontend affiche d'abord une page de connexion JWT (credentials demo: `demo` / `demo`), puis charge la liste des films.
+
 Frontend: `http://localhost:4200`
 Backend API: `http://localhost:8080/api/hello`
+
+Endpoints films:
+
+- `GET /api/films` -> liste de tous les films (id, title, releaseYear, genre) (JWT requis)
+- `GET /api/films/{id}` -> detail complet d'un film (JWT requis)
 
 Credentials de demo JWT:
 
@@ -74,6 +86,8 @@ Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/auth/token" -Cont
 Endpoint securise:
 
 - `GET /api/secure/hello` avec header `Authorization: Bearer <token>`
+- `GET /api/films` avec header `Authorization: Bearer <token>`
+- `GET /api/films/{id}` avec header `Authorization: Bearer <token>`
 
 ## Lancement complet avec Docker Compose
 

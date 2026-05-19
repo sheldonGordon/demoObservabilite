@@ -19,23 +19,44 @@
   opacity: 0.8;
 }
 
-.cards {
+.layout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: 1fr 1.2fr;
   gap: 16px;
   margin-top: 24px;
 }
 
-.card,
-.backend-check {
+.panel {
   background: white;
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
 }
 
-.backend-check {
-  margin-top: 24px;
+.auth-panel {
+  max-width: 460px;
+  margin: 24px auto 0;
+  display: grid;
+  gap: 10px;
+}
+
+.auth-panel label {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.auth-panel input {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
 button {
@@ -50,6 +71,78 @@ button {
 
 button:hover {
   background: #1d4ed8;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.film-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  display: grid;
+  gap: 10px;
+  max-height: 550px;
+  overflow: auto;
+}
+
+.film-list li {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0;
+}
+
+.film-list li:hover {
+  border-color: #60a5fa;
+  background: #f8fbff;
+}
+
+.film-list li.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.film-list h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.film-list p {
+  margin: 0;
+  color: #475569;
+}
+
+.state {
+  color: #475569;
+}
+
+.state.error {
+  color: #b91c1c;
+}
+
+.detail-grid p {
+  margin: 8px 0;
+}
+
+.detail-grid .synopsis {
+  margin-top: 14px;
+}
+
+.film-item {
+  all: unset;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 code {
