@@ -1,6 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
+export interface FrontendTraceContext {
+  traceId: string;
+  sessionId: string;
+}
+
 interface FrontendLogPayload {
   traceId: string;
   spanId: string;
@@ -17,13 +22,15 @@ interface FrontendLogPayload {
 @Injectable({ providedIn: 'root' })
 export class FrontendLogService {
   private readonly endpoint = '/api/logs/frontend';
-  private readonly traceId = this.getOrCreateStorageValue('demo.trace.id', () => this.generateTraceId());
   private readonly sessionId = this.getOrCreateStorageValue('demo.session.id', () => crypto.randomUUID());
 
   constructor(private readonly http: HttpClient) {}
 
-  getTraceId(): string {
-    return this.traceId;
+  createTraceContext(): FrontendTraceContext {
+    return {
+      traceId: this.generateTraceId(),
+      sessionId: this.sessionId
+    };
   }
 
   getSessionId(): string {
@@ -34,28 +41,45 @@ export class FrontendLogService {
     return this.generateSpanId();
   }
 
-  info(event: string, message: string, context: Record<string, unknown> = {}): void {
-    this.send('INFO', event, message, context);
+  info(
+    event: string,
+    message: string,
+    context: Record<string, unknown> = {},
+    traceContext?: FrontendTraceContext
+  ): void {
+    this.send('INFO', event, message, context, traceContext);
   }
 
-  warn(event: string, message: string, context: Record<string, unknown> = {}): void {
-    this.send('WARN', event, message, context);
+  warn(
+    event: string,
+    message: string,
+    context: Record<string, unknown> = {},
+    traceContext?: FrontendTraceContext
+  ): void {
+    this.send('WARN', event, message, context, traceContext);
   }
 
-  error(event: string, message: string, context: Record<string, unknown> = {}): void {
-    this.send('ERROR', event, message, context);
+  error(
+    event: string,
+    message: string,
+    context: Record<string, unknown> = {},
+    traceContext?: FrontendTraceContext
+  ): void {
+    this.send('ERROR', event, message, context, traceContext);
   }
 
   private send(
     level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR',
     event: string,
     message: string,
-    context: Record<string, unknown>
+    context: Record<string, unknown>,
+    traceContext?: FrontendTraceContext
   ): void {
+    const resolvedTraceContext = traceContext ?? this.createTraceContext();
     const payload: FrontendLogPayload = {
-      traceId: this.traceId,
+      traceId: resolvedTraceContext.traceId,
       spanId: this.generateSpanId(),
-      sessionId: this.sessionId,
+      sessionId: resolvedTraceContext.sessionId,
       level,
       event,
       message,
