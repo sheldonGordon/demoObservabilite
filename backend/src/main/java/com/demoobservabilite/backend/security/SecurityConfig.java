@@ -12,9 +12,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final FrontendCorrelationFilter frontendCorrelationFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            FrontendCorrelationFilter frontendCorrelationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.frontendCorrelationFilter = frontendCorrelationFilter;
     }
 
     @Bean
@@ -24,8 +28,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/token", "/actuator", "/actuator/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/logs/frontend").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/hello").permitAll()
                         .anyRequest().authenticated())
+                .addFilterBefore(frontendCorrelationFilter, JwtAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

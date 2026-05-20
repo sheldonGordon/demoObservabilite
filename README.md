@@ -72,6 +72,14 @@ Endpoints films:
 - `GET /api/films` -> liste de tous les films (id, title, releaseYear, genre) (JWT requis)
 - `GET /api/films/{id}` -> detail complet d'un film (JWT requis)
 - `PUT /api/films/{id}` -> modification d'un film (JWT requis, payload partiel possible)
+- `POST /api/logs/frontend` -> ingestion des logs frontend (sans JWT, payload valide requis)
+
+Correlation frontend -> backend sur les APIs films:
+
+- le frontend envoie `X-Trace-Id` (32 hex) et `X-Session-Id`
+- le backend enrichit les logs des requetes `/api/films` et `/api/films/{id}` via MDC
+- format log backend: `[trace_id,span_id,frontend_session_id]`
+- si `X-Trace-Id` est absent/invalide, le backend genere un `trace_id` fallback et le renvoie dans `X-Resolved-Trace-Id`
 
 Credentials de demo JWT:
 
@@ -90,6 +98,24 @@ Endpoint securise:
 - `GET /api/films` avec header `Authorization: Bearer <token>`
 - `GET /api/films/{id}` avec header `Authorization: Bearer <token>`
 - `PUT /api/films/{id}` avec header `Authorization: Bearer <token>`
+
+Payload attendu pour les logs frontend:
+
+```json
+{
+  "traceId": "2ec7f640d9f5444a9e14dba3116e67af",
+  "sessionId": "5a80b46b-5c14-4844-ac6e-6cd02fd4d49e",
+  "level": "INFO",
+  "event": "FILMS_LIST_SUCCESS",
+  "message": "Liste des films chargee",
+  "timestamp": "2026-05-20T08:25:03.550Z",
+  "route": "/",
+  "userAgent": "Mozilla/5.0 ...",
+  "context": {
+	"count": 100
+  }
+}
+```
 
 ## Lancement complet avec Docker Compose
 
@@ -110,6 +136,7 @@ Traitement batch actuel:
 - authentification sur l'API backend via JWT
 - recuperation de tous les films via `GET /api/films`
 - mise a jour aleatoire de `imdb_score` film par film via `PUT /api/films/{id}`
+- propagation des headers `X-Trace-Id` et `X-Session-Id` sur les appels API du batch
 
 ## OpenTelemetry (logs uniquement)
 
@@ -124,6 +151,7 @@ Dans `docker-compose.yml`, `backend` et `batch` utilisent :
 Resultat attendu dans les logs :
 
 - chaque ligne contient `trace_id` et `span_id` quand un contexte de trace existe
+- les logs frontend incluent aussi `frontend_session_id` pour la correlation
 - pas d'export de traces/metriques, seulement enrichissement des logs
 
 ## Build et tests Java

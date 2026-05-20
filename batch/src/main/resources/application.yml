@@ -17,7 +17,7 @@ spring:
 
 logging:
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%X{trace_id:-},%X{span_id:-}] %logger{36} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%X{trace_id:-},%X{span_id:-},%X{frontend_session_id:-}] %logger{36} - %msg%n"
 
 demo:
   backend:
