@@ -31,10 +31,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/logs/frontend").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/hello").permitAll()
                         .anyRequest().authenticated())
-                .addFilterBefore(frontendCorrelationFilter, JwtAuthenticationFilter.class)
+                // Ancre les filtres personnalisés sur un filtre Spring Security connu.
+                .addFilterBefore(frontendCorrelationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 }
-
