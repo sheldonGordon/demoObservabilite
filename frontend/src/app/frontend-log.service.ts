@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 
 interface FrontendLogPayload {
   traceId: string;
+  spanId: string;
   sessionId: string;
   level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
   event: string;
@@ -29,6 +30,10 @@ export class FrontendLogService {
     return this.sessionId;
   }
 
+  getSpanId(): string {
+    return this.generateSpanId();
+  }
+
   info(event: string, message: string, context: Record<string, unknown> = {}): void {
     this.send('INFO', event, message, context);
   }
@@ -49,6 +54,7 @@ export class FrontendLogService {
   ): void {
     const payload: FrontendLogPayload = {
       traceId: this.traceId,
+      spanId: this.generateSpanId(),
       sessionId: this.sessionId,
       level,
       event,
@@ -82,5 +88,10 @@ export class FrontendLogService {
     crypto.getRandomValues(bytes);
     return Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('');
   }
-}
 
+  private generateSpanId(): string {
+    const bytes = new Uint8Array(8);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('');
+  }
+}

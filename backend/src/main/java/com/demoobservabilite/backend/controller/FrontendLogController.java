@@ -24,14 +24,21 @@ public class FrontendLogController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void ingestFrontendLog(@Valid @RequestBody FrontendLogRequest request) {
         String previousTraceId = MDC.get("trace_id");
+        String previousSpanId = MDC.get("span_id");
         String previousSessionId = MDC.get("frontend_session_id");
 
         try {
             MDC.put("trace_id", request.traceId());
+            MDC.put("traceId", request.traceId());
+            MDC.put("span_id", request.spanId());
+            MDC.put("spanId", request.spanId());
             MDC.put("frontend_session_id", request.sessionId());
             logByLevel(request);
         } finally {
             restoreMdc("trace_id", previousTraceId);
+            restoreMdc("traceId", previousTraceId);
+            restoreMdc("span_id", previousSpanId);
+            restoreMdc("spanId", previousSpanId);
             restoreMdc("frontend_session_id", previousSessionId);
         }
     }
@@ -88,4 +95,3 @@ public class FrontendLogController {
         MDC.put(key, previousValue);
     }
 }
-

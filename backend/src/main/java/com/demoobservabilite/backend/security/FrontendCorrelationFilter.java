@@ -19,6 +19,7 @@ public class FrontendCorrelationFilter extends OncePerRequestFilter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FrontendCorrelationFilter.class);
     private static final String TRACE_ID_HEADER = "X-Trace-Id";
+    private static final String SPAN_ID_HEADER = "X-Span-Id";
     private static final String SESSION_ID_HEADER = "X-Session-Id";
     private static final String RESOLVED_TRACE_ID_HEADER = "X-Resolved-Trace-Id";
     private static final String RESOLVED_SPAN_ID_HEADER = "X-Resolved-Span-Id";
@@ -41,7 +42,7 @@ public class FrontendCorrelationFilter extends OncePerRequestFilter {
 
         try {
             String resolvedTraceId = resolveTraceId(request.getHeader(TRACE_ID_HEADER));
-            String resolvedSpanId = resolveSpanId(MDC.get("span_id"));
+            String resolvedSpanId = resolveSpanId(request.getHeader(SPAN_ID_HEADER), MDC.get("span_id"));
             MDC.put("trace_id", resolvedTraceId);
             MDC.put("traceId", resolvedTraceId);
             MDC.put("span_id", resolvedSpanId);
@@ -78,7 +79,10 @@ public class FrontendCorrelationFilter extends OncePerRequestFilter {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
-    private static String resolveSpanId(String currentSpanId) {
+    private static String resolveSpanId(String incomingSpanId, String currentSpanId) {
+        if (incomingSpanId != null && SPAN_ID_PATTERN.matcher(incomingSpanId).matches()) {
+            return incomingSpanId;
+        }
         if (currentSpanId != null && SPAN_ID_PATTERN.matcher(currentSpanId).matches()) {
             return currentSpanId;
         }

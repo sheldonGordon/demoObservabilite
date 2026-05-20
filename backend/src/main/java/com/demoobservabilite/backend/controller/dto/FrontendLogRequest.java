@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Size;
 
 public record FrontendLogRequest(
         @NotBlank @Pattern(regexp = "^[a-f0-9]{32}$") String traceId,
+        @NotBlank @Pattern(regexp = "^[a-f0-9]{16}$") String spanId,
         @NotBlank @Size(max = 64) String sessionId,
         @NotBlank @Pattern(regexp = "^(DEBUG|INFO|WARN|ERROR)$") String level,
         @NotBlank @Size(max = 80) String event,
@@ -19,4 +20,3 @@ public record FrontendLogRequest(
         @Size(max = 300) String userAgent,
         Map<String, Object> context) {
 }
-

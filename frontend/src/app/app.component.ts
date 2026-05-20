@@ -192,8 +192,8 @@ export class AppComponent implements OnInit {
     return new HttpHeaders({
       Authorization: `Bearer ${this.authToken}`,
       'X-Trace-Id': this.frontendLogService.getTraceId(),
+      'X-Span-Id': this.frontendLogService.getSpanId(),
       'X-Session-Id': this.frontendLogService.getSessionId()
     });
   }
 }
-
