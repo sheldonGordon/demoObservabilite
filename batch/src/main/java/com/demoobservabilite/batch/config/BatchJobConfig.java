@@ -62,20 +62,35 @@ public class BatchJobConfig {
                     MDC.put("frontend_session_id", sessionId);
 
                     try {
+                        LOGGER.info("Demarrage du batch de mise a jour des scores IMDB");
+                        LOGGER.debug("TraceId: {}, SessionId: {}", traceId, sessionId);
+                        
+                        LOGGER.info("Etape 1: Authentification aupres du backend...");
                         String token = authenticateAndGetToken(traceId, sessionId);
+                        LOGGER.info("Authentification reussie, token obtenu");
+                        
+                        LOGGER.info("Etape 2: Recuperation de la liste des films...");
                         FilmSummary[] films = fetchFilms(token, traceId, sessionId);
+                        LOGGER.info("Recuperation reussie, {} films trouves", films.length);
+                        
                         int updatedRows = 0;
 
+                        LOGGER.info("Etape 3: Mise a jour des scores IMDB...");
                         for (FilmSummary film : films) {
                             BigDecimal randomImdbScore = BigDecimal
                                     .valueOf(ThreadLocalRandom.current().nextDouble(5.0, 10.0))
                                     .setScale(1, RoundingMode.HALF_UP);
 
+                            LOGGER.debug("Mise a jour du film {} avec le score {}", film.id(), randomImdbScore);
                             updateFilmScore(token, film.id(), randomImdbScore, traceId, sessionId);
                             updatedRows++;
                         }
 
                         LOGGER.info("Mise a jour aleatoire de imdb_score via API terminee. {} films modifies.", updatedRows);
+                        LOGGER.info("Batch termine avec succes");
+                    } catch (Exception e) {
+                        LOGGER.error("Erreur lors de l'execution du batch: {}", e.getMessage(), e);
+                        throw e;
                     } finally {
                         MDC.remove("trace_id");
                         MDC.remove("frontend_session_id");
@@ -92,43 +107,62 @@ public class BatchJobConfig {
                 Map.of("username", backendUsername, "password", backendPassword),
                 createCorrelationHeaders(traceId, sessionId));
 
-        @SuppressWarnings("unchecked")
-        ResponseEntity<Map> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                requestEntity,
-                Map.class);
+        try {
+            @SuppressWarnings("unchecked")
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    requestEntity,
+                    Map.class);
 
-        @SuppressWarnings("unchecked")
-        Map<String, String> body = response.getBody();
+            @SuppressWarnings("unchecked")
+            Map<String, String> body = response.getBody();
 
-        if (body == null || body.get("token") == null || body.get("token").isBlank()) {
-            throw new IllegalStateException("Impossible de recuperer le token JWT depuis l'API backend.");
+            if (body == null || body.get("token") == null || body.get("token").isBlank()) {
+                throw new IllegalStateException("Impossible de recuperer le token JWT depuis l'API backend.");
+            }
+            LOGGER.debug("Token JWT obtenu avec succes");
+            return body.get("token");
+        } catch (Exception e) {
+            LOGGER.error("Erreur lors de l'authentification aupres de {}: {}", url, e.getMessage(), e);
+            throw e;
         }
-        return body.get("token");
     }
 
     private FilmSummary[] fetchFilms(String token, String traceId, String sessionId) {
-        HttpEntity<Void> requestEntity = new HttpEntity<>(createAuthHeaders(token, traceId, sessionId));
-        ResponseEntity<FilmSummary[]> response = restTemplate.exchange(
-                backendBaseUrl + "/api/films",
-                HttpMethod.GET,
-                requestEntity,
-                FilmSummary[].class);
+        try {
+            HttpEntity<Void> requestEntity = new HttpEntity<>(createAuthHeaders(token, traceId, sessionId));
+            ResponseEntity<FilmSummary[]> response = restTemplate.exchange(
+                    backendBaseUrl + "/api/films",
+                    HttpMethod.GET,
+                    requestEntity,
+                    FilmSummary[].class);
 
-        return response.getBody() == null ? new FilmSummary[0] : response.getBody();
+            FilmSummary[] result = response.getBody() == null ? new FilmSummary[0] : response.getBody();
+            LOGGER.debug("Films recuperes: {}", (Object[]) result);
+            return result;
+        } catch (Exception e) {
+            LOGGER.error("Erreur lors de la recuperation des films: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     private void updateFilmScore(String token, Long filmId, BigDecimal imdbScore, String traceId, String sessionId) {
-        HttpEntity<Map<String, BigDecimal>> requestEntity = new HttpEntity<>(
-                Map.of("imdbScore", imdbScore),
-                createAuthHeaders(token, traceId, sessionId));
+        try {
+            HttpEntity<Map<String, BigDecimal>> requestEntity = new HttpEntity<>(
+                    Map.of("imdbScore", imdbScore),
+                    createAuthHeaders(token, traceId, sessionId));
 
-        restTemplate.exchange(
-                backendBaseUrl + "/api/films/" + filmId,
-                HttpMethod.PUT,
-                requestEntity,
-                Void.class);
+            restTemplate.exchange(
+                    backendBaseUrl + "/api/films/" + filmId,
+                    HttpMethod.PUT,
+                    requestEntity,
+                    Void.class);
+            LOGGER.debug("Film {} mis a jour avec le score {}", filmId, imdbScore);
+        } catch (Exception e) {
+            LOGGER.error("Erreur lors de la mise a jour du film {}: {}", filmId, e.getMessage(), e);
+            throw e;
+        }
     }
 
     private HttpHeaders createAuthHeaders(String token, String traceId, String sessionId) {
