@@ -31,6 +31,7 @@ public class BatchJobConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BatchJobConfig.class);
     private static final String TRACE_ID_HEADER = "X-Trace-Id";
+    private static final String SPAN_ID_HEADER = "X-Span-Id";
     private static final String SESSION_ID_HEADER = "X-Session-Id";
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -55,8 +56,10 @@ public class BatchJobConfig {
         return new StepBuilder("demoStep", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
                     String traceId = generateTraceId();
+                    String rootSpanId = generateSpanId();
                     String sessionId = "batch-" + UUID.randomUUID();
                     MDC.put("trace_id", traceId);
+                    MDC.put("span_id", rootSpanId);
                     MDC.put("frontend_session_id", sessionId);
 
                     try {
@@ -91,6 +94,7 @@ public class BatchJobConfig {
                         throw e;
                     } finally {
                         MDC.remove("trace_id");
+                        MDC.remove("span_id");
                         MDC.remove("frontend_session_id");
                     }
                     return RepeatStatus.FINISHED;
@@ -100,10 +104,13 @@ public class BatchJobConfig {
 
     private String authenticateAndGetToken(String traceId, String sessionId) {
         String url = backendBaseUrl + "/api/auth/token";
+        String spanId = generateSpanId();
+        String previousSpanId = MDC.get("span_id");
+        MDC.put("span_id", spanId);
 
         HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(
                 Map.of("username", backendUsername, "password", backendPassword),
-                createCorrelationHeaders(traceId, sessionId));
+                createCorrelationHeaders(traceId, spanId, sessionId));
 
         try {
             @SuppressWarnings("unchecked")
@@ -124,12 +131,17 @@ public class BatchJobConfig {
         } catch (Exception e) {
             LOGGER.error("Erreur lors de l'authentification aupres de {}: {}", url, e.getMessage(), e);
             throw e;
+        } finally {
+            restoreSpan(previousSpanId);
         }
     }
 
     private FilmSummary[] fetchFilms(String token, String traceId, String sessionId) {
+        String spanId = generateSpanId();
+        String previousSpanId = MDC.get("span_id");
+        MDC.put("span_id", spanId);
         try {
-            HttpEntity<Void> requestEntity = new HttpEntity<>(createAuthHeaders(token, traceId, sessionId));
+            HttpEntity<Void> requestEntity = new HttpEntity<>(createAuthHeaders(token, traceId, spanId, sessionId));
             ResponseEntity<FilmSummary[]> response = restTemplate.exchange(
                     backendBaseUrl + "/api/films",
                     HttpMethod.GET,
@@ -142,14 +154,19 @@ public class BatchJobConfig {
         } catch (Exception e) {
             LOGGER.error("Erreur lors de la recuperation des films: {}", e.getMessage(), e);
             throw e;
+        } finally {
+            restoreSpan(previousSpanId);
         }
     }
 
     private void updateFilmScore(String token, Long filmId, BigDecimal imdbScore, String traceId, String sessionId) {
+        String spanId = generateSpanId();
+        String previousSpanId = MDC.get("span_id");
+        MDC.put("span_id", spanId);
         try {
             HttpEntity<Map<String, BigDecimal>> requestEntity = new HttpEntity<>(
                     Map.of("imdbScore", imdbScore),
-                    createAuthHeaders(token, traceId, sessionId));
+                    createAuthHeaders(token, traceId, spanId, sessionId));
 
             restTemplate.exchange(
                     backendBaseUrl + "/api/films/" + filmId,
@@ -160,28 +177,44 @@ public class BatchJobConfig {
         } catch (Exception e) {
             LOGGER.error("Erreur lors de la mise a jour du film {}: {}", filmId, e.getMessage(), e);
             throw e;
+        } finally {
+            restoreSpan(previousSpanId);
         }
     }
 
-    private HttpHeaders createAuthHeaders(String token, String traceId, String sessionId) {
+    private HttpHeaders createAuthHeaders(String token, String traceId, String spanId, String sessionId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add(TRACE_ID_HEADER, traceId);
+        headers.add(SPAN_ID_HEADER, spanId);
         headers.add(SESSION_ID_HEADER, sessionId);
         return headers;
     }
 
-    private HttpHeaders createCorrelationHeaders(String traceId, String sessionId) {
+    private HttpHeaders createCorrelationHeaders(String traceId, String spanId, String sessionId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add(TRACE_ID_HEADER, traceId);
+        headers.add(SPAN_ID_HEADER, spanId);
         headers.add(SESSION_ID_HEADER, sessionId);
         return headers;
     }
 
     private String generateTraceId() {
         return UUID.randomUUID().toString().replace("-", "");
+    }
+
+    private String generateSpanId() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+    }
+
+    private void restoreSpan(String previousSpanId) {
+        if (previousSpanId == null || previousSpanId.isBlank()) {
+            MDC.remove("span_id");
+            return;
+        }
+        MDC.put("span_id", previousSpanId);
     }
 
     private record FilmSummary(Long id, String title, Integer release_year, String genre) {
