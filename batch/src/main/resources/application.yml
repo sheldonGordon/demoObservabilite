@@ -7,7 +7,7 @@ spring:
     jdbc:
       initialize-schema: always
     job:
-      enabled: true
+      enabled: false
       name: demoJob
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/demo_observabilite}

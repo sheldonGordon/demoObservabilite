@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
@@ -28,7 +27,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
-@EnableBatchProcessing
 public class BatchJobConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BatchJobConfig.class);
