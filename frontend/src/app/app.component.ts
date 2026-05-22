@@ -74,7 +74,7 @@ export class AppComponent implements OnInit {
     this.loginError = '';
     this.frontendLogService.info('AUTH_LOGIN_ATTEMPT', 'Tentative de connexion utilisateur', {
       username: this.username
-    }, traceContext);
+    }, traceContext).subscribe();
 
     this.http
       .post<{ token: string }>('/api/auth/token', {
@@ -121,7 +121,7 @@ export class AppComponent implements OnInit {
     const traceContext = this.frontendLogService.createTraceContext();
     this.loadingFilms = true;
     this.filmsError = '';
-    this.frontendLogService.info('FILMS_LIST_REQUEST', 'Chargement de la liste des films', {}, traceContext);
+    this.frontendLogService.info('FILMS_LIST_REQUEST', 'Chargement de la liste des films', {}, traceContext).subscribe();
 
     this.http
       .get<FilmSummary[]>('/api/films', { headers: this.authHeaders(traceContext) })
