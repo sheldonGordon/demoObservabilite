@@ -43,6 +43,15 @@ export class FrontendLogService {
     return this.generateSpanId();
   }
 
+  debug(
+    event: string,
+    message: string,
+    context: Record<string, unknown> = {},
+    traceContext?: FrontendTraceContext
+  ): Observable<void> {
+    return this.send('DEBUG', event, message, context, traceContext);
+  }
+
   info(
     event: string,
     message: string,
