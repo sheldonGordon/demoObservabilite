@@ -29,7 +29,7 @@ public class FrontendCorrelationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String uri = request.getRequestURI();
-        return !uri.startsWith("/api/films");
+        return !(uri.startsWith("/api/films") || uri.startsWith("/api/auth"));
     }
 
     @Override
@@ -57,7 +57,7 @@ public class FrontendCorrelationFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
             long durationMs = (System.nanoTime() - startNanos) / 1_000_000;
-            LOGGER.info("api films method={} uri={} status={} durationMs={}",
+            LOGGER.info("api request method={} uri={} status={} durationMs={}",
                     request.getMethod(),
                     request.getRequestURI(),
                     response.getStatus(),
