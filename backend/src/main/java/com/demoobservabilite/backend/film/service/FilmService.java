@@ -8,6 +8,8 @@ import com.demoobservabilite.backend.film.dto.FilmSummaryResponse;
 import com.demoobservabilite.backend.film.dto.FilmUpdateRequest;
 import com.demoobservabilite.backend.film.model.Film;
 import com.demoobservabilite.backend.film.repository.FilmRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +17,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class FilmService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FilmService.class);
 
     private final FilmRepository filmRepository;
 
@@ -24,19 +28,26 @@ public class FilmService {
 
     @Transactional(readOnly = true)
     public List<FilmSummaryResponse> findAllFilms() {
-        return filmRepository.findAll().stream()
+        List<FilmSummaryResponse> films = filmRepository.findAll().stream()
                 .map(film -> new FilmSummaryResponse(
                         film.getId(),
                         film.getTitle(),
                         film.getReleaseYear(),
                         film.getGenre()))
                 .toList();
+        LOGGER.info("Lecture BDD: {} films recuperes", films.size());
+        return films;
     }
 
     @Transactional(readOnly = true)
     public FilmDetailsResponse findFilmDetailsById(Long id) {
         Film film = filmRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found"));
+                .orElseThrow(() -> {
+                    LOGGER.warn("Lecture BDD: film id={} introuvable", id);
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
+                });
+
+        LOGGER.info("Lecture BDD: detail film id={} recupere", id);
 
         return toDetailsResponse(film);
     }
@@ -44,7 +55,10 @@ public class FilmService {
     @Transactional
     public FilmDetailsResponse updateFilm(Long id, FilmUpdateRequest request) {
         Film film = filmRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found"));
+                .orElseThrow(() -> {
+                    LOGGER.warn("Ecriture BDD: film id={} introuvable pour mise a jour", id);
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Film not found");
+                });
 
         if (request.title() != null) {
             film.setTitle(request.title());
@@ -82,6 +96,7 @@ public class FilmService {
 
         film.setUpdatedAt(OffsetDateTime.now());
         Film updatedFilm = filmRepository.save(film);
+        LOGGER.info("Ecriture BDD: film id={} mis a jour", id);
         return toDetailsResponse(updatedFilm);
     }
 
