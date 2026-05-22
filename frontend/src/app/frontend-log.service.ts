@@ -1,5 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 export interface FrontendTraceContext {
   traceId: string;
@@ -46,8 +48,8 @@ export class FrontendLogService {
     message: string,
     context: Record<string, unknown> = {},
     traceContext?: FrontendTraceContext
-  ): void {
-    this.send('INFO', event, message, context, traceContext);
+  ): Observable<void> {
+    return this.send('INFO', event, message, context, traceContext);
   }
 
   warn(
@@ -55,8 +57,8 @@ export class FrontendLogService {
     message: string,
     context: Record<string, unknown> = {},
     traceContext?: FrontendTraceContext
-  ): void {
-    this.send('WARN', event, message, context, traceContext);
+  ): Observable<void> {
+    return this.send('WARN', event, message, context, traceContext);
   }
 
   error(
@@ -64,8 +66,8 @@ export class FrontendLogService {
     message: string,
     context: Record<string, unknown> = {},
     traceContext?: FrontendTraceContext
-  ): void {
-    this.send('ERROR', event, message, context, traceContext);
+  ): Observable<void> {
+    return this.send('ERROR', event, message, context, traceContext);
   }
 
   private send(
@@ -74,7 +76,7 @@ export class FrontendLogService {
     message: string,
     context: Record<string, unknown>,
     traceContext?: FrontendTraceContext
-  ): void {
+  ): Observable<void> {
     const resolvedTraceContext = traceContext ?? this.createTraceContext();
     const payload: FrontendLogPayload = {
       traceId: resolvedTraceContext.traceId,
@@ -89,11 +91,10 @@ export class FrontendLogService {
       context
     };
 
-    this.http.post(this.endpoint, payload).subscribe({
-      error: () => {
-        // Keep app flow stable even if log ingestion is unavailable.
-      }
-    });
+    return this.http.post(this.endpoint, payload).pipe(
+      map(() => void 0),
+      catchError(() => of(void 0))  // Keep app flow stable even if log ingestion is unavailable.
+    );
   }
 
   private getOrCreateStorageValue(key: string, generator: () => string): string {

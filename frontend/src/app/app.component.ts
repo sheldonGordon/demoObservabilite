@@ -54,13 +54,13 @@ export class AppComponent implements OnInit {
     const initTraceContext = this.frontendLogService.createTraceContext();
     this.frontendLogService.info('APP_INIT', 'Initialisation de l\'application frontend', {
       hadStoredToken: !!storedToken
-    }, initTraceContext);
+    }, initTraceContext).subscribe();
 
     if (storedToken) {
       this.authToken = storedToken;
       const restoreTraceContext = this.frontendLogService.createTraceContext();
-      this.frontendLogService.info('AUTH_RESTORE', 'Session JWT restauree depuis le stockage local', {}, restoreTraceContext);
-      this.loadFilms();
+      this.frontendLogService.info('AUTH_RESTORE', 'Session JWT restauree depuis le stockage local', {}, restoreTraceContext)
+        .subscribe(() => this.loadFilms());
     }
   }
 
@@ -88,14 +88,15 @@ export class AppComponent implements OnInit {
           this.authToken = response.token;
           localStorage.setItem('demo.jwt.token', this.authToken);
           this.loadingLogin = false;
-          this.frontendLogService.info('AUTH_LOGIN_SUCCESS', 'Connexion reussie', {}, traceContext);
-          this.loadFilms();
+          // Attendre la confirmation du log avant de charger les films pour garantir l'ordre des logs.
+          this.frontendLogService.info('AUTH_LOGIN_SUCCESS', 'Connexion reussie', {}, traceContext)
+            .subscribe(() => this.loadFilms());
         },
         error: (error) => {
           this.loginError = 'Connexion impossible. Verifie username/password.';
           this.frontendLogService.warn('AUTH_LOGIN_FAILED', 'Echec de connexion', {
             status: error?.status ?? 'n/a'
-          }, traceContext);
+          }, traceContext).subscribe();
           this.loadingLogin = false;
         }
       });
@@ -103,7 +104,7 @@ export class AppComponent implements OnInit {
 
   logout(): void {
     const traceContext = this.frontendLogService.createTraceContext();
-    this.frontendLogService.info('AUTH_LOGOUT', 'Deconnexion utilisateur', {}, traceContext);
+    this.frontendLogService.info('AUTH_LOGOUT', 'Deconnexion utilisateur', {}, traceContext).subscribe();
     this.authToken = '';
     localStorage.removeItem('demo.jwt.token');
     this.films = [];
@@ -127,15 +128,17 @@ export class AppComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.films = response;
+          this.loadingFilms = false;
+          // Attendre la confirmation du log avant de selectionner le premier film.
           this.frontendLogService.info('FILMS_LIST_SUCCESS', 'Liste des films chargee', {
             count: response.length
-          }, traceContext);
-          if (this.films.length > 0) {
-            this.selectFilm(this.films[0]);
-          } else {
-            this.selectedFilm = undefined;
-          }
-          this.loadingFilms = false;
+          }, traceContext).subscribe(() => {
+            if (this.films.length > 0) {
+              this.selectFilm(this.films[0]);
+            } else {
+              this.selectedFilm = undefined;
+            }
+          });
         },
         error: (error) => {
           if (error?.status === 401 || error?.status === 403) {
@@ -143,12 +146,12 @@ export class AppComponent implements OnInit {
             this.loginError = 'Session expiree. Reconnecte-toi.';
             this.frontendLogService.warn('FILMS_LIST_UNAUTHORIZED', 'Session expiree pendant chargement des films', {
               status: error?.status
-            }, traceContext);
+            }, traceContext).subscribe();
           } else {
             this.filmsError = 'Impossible de charger les films.';
             this.frontendLogService.error('FILMS_LIST_ERROR', 'Erreur de chargement de la liste des films', {
               status: error?.status ?? 'n/a'
-            }, traceContext);
+            }, traceContext).subscribe();
           }
           this.loadingFilms = false;
         }
@@ -165,7 +168,7 @@ export class AppComponent implements OnInit {
     this.detailsError = '';
     this.frontendLogService.info('FILM_DETAILS_REQUEST', 'Chargement du detail film', {
       filmId: film.id
-    }, traceContext);
+    }, traceContext).subscribe();
 
     this.http
       .get<FilmDetails>(`/api/films/${film.id}`, { headers: this.authHeaders(traceContext) })
@@ -174,7 +177,7 @@ export class AppComponent implements OnInit {
           this.selectedFilm = response;
           this.frontendLogService.info('FILM_DETAILS_SUCCESS', 'Detail film charge', {
             filmId: film.id
-          }, traceContext);
+          }, traceContext).subscribe();
           this.loadingDetails = false;
         },
         error: (error) => {
@@ -184,13 +187,13 @@ export class AppComponent implements OnInit {
             this.frontendLogService.warn('FILM_DETAILS_UNAUTHORIZED', 'Session expiree pendant chargement du detail film', {
               status: error?.status,
               filmId: film.id
-            }, traceContext);
+            }, traceContext).subscribe();
           } else {
             this.detailsError = 'Impossible de charger le detail du film.';
             this.frontendLogService.error('FILM_DETAILS_ERROR', 'Erreur de chargement du detail film', {
               status: error?.status ?? 'n/a',
               filmId: film.id
-            }, traceContext);
+            }, traceContext).subscribe();
           }
           this.loadingDetails = false;
         }
