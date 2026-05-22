@@ -18,7 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/logs/frontend")
 public class FrontendLogController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FrontendLogController.class);
+    // Dedicated logger category for frontend logs routing.
+    private static final Logger LOGGER = LoggerFactory.getLogger("frontend.logs");
 
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
