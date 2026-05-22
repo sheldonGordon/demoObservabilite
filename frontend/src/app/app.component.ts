@@ -130,7 +130,7 @@ export class AppComponent implements OnInit {
           this.films = response;
           this.loadingFilms = false;
           // Attendre la confirmation du log avant de selectionner le premier film.
-          this.frontendLogService.info('FILMS_LIST_SUCCESS', 'Liste des films chargee', {
+          this.frontendLogService.debug('FILMS_LIST_SUCCESS', 'Liste des films chargee', {
             count: response.length
           }, traceContext).subscribe(() => {
             if (this.films.length > 0) {
@@ -175,7 +175,7 @@ export class AppComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.selectedFilm = response;
-          this.frontendLogService.info('FILM_DETAILS_SUCCESS', 'Detail film charge', {
+          this.frontendLogService.debug('FILM_DETAILS_SUCCESS', 'Detail film charge', {
             filmId: film.id
           }, traceContext).subscribe();
           this.loadingDetails = false;
