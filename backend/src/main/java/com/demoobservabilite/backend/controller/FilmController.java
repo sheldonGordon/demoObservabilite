@@ -44,6 +44,7 @@ public class FilmController {
     @PutMapping("/{id}")
     public FilmDetailsResponse updateFilm(@PathVariable Long id, @RequestBody FilmUpdateRequest request) {
         LOGGER.info("Requete recue sur PUT /api/films/{}", id);
+        LOGGER.debug("Detail FilmUpdateRequest id={} payload={}", id, request);
         return filmService.updateFilm(id, request);
     }
 }
