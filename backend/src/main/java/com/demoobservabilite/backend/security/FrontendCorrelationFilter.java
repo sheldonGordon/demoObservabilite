@@ -44,9 +44,7 @@ public class FrontendCorrelationFilter extends OncePerRequestFilter {
             String resolvedTraceId = resolveTraceId(request.getHeader(TRACE_ID_HEADER));
             String resolvedSpanId = resolveSpanId(request.getHeader(SPAN_ID_HEADER), MDC.get("span_id"));
             MDC.put("trace_id", resolvedTraceId);
-            MDC.put("traceId", resolvedTraceId);
             MDC.put("span_id", resolvedSpanId);
-            MDC.put("spanId", resolvedSpanId);
             response.setHeader(RESOLVED_TRACE_ID_HEADER, resolvedTraceId);
             response.setHeader(RESOLVED_SPAN_ID_HEADER, resolvedSpanId);
 
@@ -64,9 +62,7 @@ public class FrontendCorrelationFilter extends OncePerRequestFilter {
                     durationMs);
         } finally {
             restoreMdc("trace_id", previousTraceId);
-            restoreMdc("traceId", previousTraceId);
             restoreMdc("span_id", previousSpanId);
-            restoreMdc("spanId", previousSpanId);
             restoreMdc("frontend_session_id", previousSessionId);
         }
     }

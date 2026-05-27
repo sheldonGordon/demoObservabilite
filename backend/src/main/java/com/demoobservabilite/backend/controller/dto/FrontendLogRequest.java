@@ -3,14 +3,22 @@ package com.demoobservabilite.backend.controller.dto;
 import java.time.OffsetDateTime;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record FrontendLogRequest(
+        @JsonProperty("trace_id")
+        @JsonAlias("traceId")
         @NotBlank @Pattern(regexp = "^[a-f0-9]{32}$") String traceId,
+        @JsonProperty("span_id")
+        @JsonAlias("spanId")
         @NotBlank @Pattern(regexp = "^[a-f0-9]{16}$") String spanId,
+        @JsonProperty("session_id")
+        @JsonAlias("sessionId")
         @NotBlank @Size(max = 64) String sessionId,
         @NotBlank @Pattern(regexp = "^(DEBUG|INFO|WARN|ERROR)$") String level,
         @NotBlank @Size(max = 80) String event,

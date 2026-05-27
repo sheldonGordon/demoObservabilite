@@ -4,14 +4,14 @@ import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 export interface FrontendTraceContext {
-  traceId: string;
-  sessionId: string;
+  trace_id: string;
+  session_id: string;
 }
 
 interface FrontendLogPayload {
-  traceId: string;
-  spanId: string;
-  sessionId: string;
+  trace_id: string;
+  span_id: string;
+  session_id: string;
   level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
   event: string;
   message: string;
@@ -30,8 +30,8 @@ export class FrontendLogService {
 
   createTraceContext(): FrontendTraceContext {
     return {
-      traceId: this.generateTraceId(),
-      sessionId: this.sessionId
+      trace_id: this.generateTraceId(),
+      session_id: this.sessionId
     };
   }
 
@@ -88,9 +88,9 @@ export class FrontendLogService {
   ): Observable<void> {
     const resolvedTraceContext = traceContext ?? this.createTraceContext();
     const payload: FrontendLogPayload = {
-      traceId: resolvedTraceContext.traceId,
-      spanId: this.generateSpanId(),
-      sessionId: resolvedTraceContext.sessionId,
+      trace_id: resolvedTraceContext.trace_id,
+      span_id: this.generateSpanId(),
+      session_id: resolvedTraceContext.session_id,
       level,
       event,
       message,

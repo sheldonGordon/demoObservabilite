@@ -64,7 +64,7 @@ public class BatchJobConfig {
 
                     try {
                         LOGGER.info("Demarrage du batch de mise a jour des scores IMDB");
-                        LOGGER.debug("TraceId: {}, SessionId: {}", traceId, sessionId);
+                        LOGGER.debug("trace_id={}, session_id={}", traceId, sessionId);
                         
                         LOGGER.info("Etape 1: Authentification aupres du backend...");
                         String token = authenticateAndGetToken(traceId, sessionId);
@@ -220,4 +220,3 @@ public class BatchJobConfig {
     private record FilmSummary(Long id, String title, Integer release_year, String genre) {
     }
 }
-

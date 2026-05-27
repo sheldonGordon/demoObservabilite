@@ -30,16 +30,12 @@ public class FrontendLogController {
 
         try {
             MDC.put("trace_id", request.traceId());
-            MDC.put("traceId", request.traceId());
             MDC.put("span_id", request.spanId());
-            MDC.put("spanId", request.spanId());
             MDC.put("frontend_session_id", request.sessionId());
             logByLevel(request);
         } finally {
             restoreMdc("trace_id", previousTraceId);
-            restoreMdc("traceId", previousTraceId);
             restoreMdc("span_id", previousSpanId);
-            restoreMdc("spanId", previousSpanId);
             restoreMdc("frontend_session_id", previousSessionId);
         }
     }

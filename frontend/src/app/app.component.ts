@@ -206,9 +206,9 @@ export class AppComponent implements OnInit {
 
   private correlationHeaders(traceContext: FrontendTraceContext): HttpHeaders {
     return new HttpHeaders({
-      'X-Trace-Id': traceContext.traceId,
+      'X-Trace-Id': traceContext.trace_id,
       'X-Span-Id': this.frontendLogService.getSpanId(),
-      'X-Session-Id': traceContext.sessionId
+      'X-Session-Id': traceContext.session_id
     });
   }
 }
